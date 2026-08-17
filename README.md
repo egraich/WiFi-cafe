@@ -1,0 +1,1 @@
+Funny pet-project for wi-fi beacon's spam
