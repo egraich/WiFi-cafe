@@ -1,8 +1,8 @@
 #pragma once
 #include <Arduino.h>
 
-// Функция для настройки бота (вызовем в setup)
+/** Initializes FastBot parameters, text format, and handlers. */
 void setupTelegramBot();
 
-// Функция для поддержания работы бота (вызовем в loop)
+/** Handles periodic polling for incoming Telegram updates. */
 void tickTelegramBot();

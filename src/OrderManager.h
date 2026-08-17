@@ -16,9 +16,16 @@ private:
     int globalOrderIdCounter = 1;
 
 public:
-    Order* addOrder(String name, int32_t messageID);
+    /** Adds a new order with generated random local MAC address. */
+    Order* addOrder(const String& name, int32_t messageID);
+
+    /** Finds an order by its associated Telegram message ID. */
     Order* getOrderByMessageID(int32_t messageID);
+
+    /** Removes an order by message ID from memory. */
     bool removeOrder(int32_t messageID);
+
+    /** Returns reference to all active orders. */
     std::vector<Order>& getAllOrders() { return orders; }
 };
 
