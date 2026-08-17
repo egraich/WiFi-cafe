@@ -39,10 +39,24 @@ void spamBeacons() {
 
     // Бежим по всем заказам и генерируем для каждого свою сеть
     for (Order& order : orders) {
-        // 1. Формируем строку: "Иван: 40%"
-        String ssid = order.name + ": " + String(order.progress) + "%";
+        // 1. Формируем неизменяемый хвост (например ": 100%" - это 6 байт)
+        String suffix = ": " + String(order.progress) + "%";
+        
+        // 2. Делаем копию имени, чтобы не сломать оригинал в Телеге
+        String safeName = order.name;
+        safeName.trim(); // Удаляем случайные пробелы в начале и конце!
+        
+        // 3. Считаем, сколько байт у нас осталось под имя (из 32 возможных)
+        int maxNameLen = 32 - suffix.length();
+        
+        // 4. Если имя слишком длинное - обрезаем его с конца
+        if (safeName.length() > maxNameLen) {
+            safeName = safeName.substring(0, maxNameLen);
+        }
+
+        // 5. Клеим идеальный SSID (он теперь ВСЕГДА не больше 32 байт)
+        String ssid = safeName + suffix;
         int ssid_len = ssid.length();
-        if (ssid_len > 32) ssid_len = 32; // Стандарт: имя сети максимум 32 байта
 
         // 2. Считаем размер пакета: шапка(36) + тег SSID(2) + длина имени + хвост(13)
         int packet_size = 36 + 2 + ssid_len + 13;
