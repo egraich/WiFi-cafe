@@ -20,7 +20,6 @@ static void handleMsg(FB_msg& msg) {
         if (msg.data == "cancel_new") {
             isWaitingForName = false;
             bot.deleteMessage(msg.messageID, msg.chatID);
-            Serial.println("[FSM] Order creation canceled.");
             return;
         }
 
@@ -37,10 +36,8 @@ static void handleMsg(FB_msg& msg) {
             changed = true; 
         }
         else if (msg.data == "btn_del") {
-            int orderId = order->id;
             orderManager.removeOrder(msg.messageID);
             bot.deleteMessage(msg.messageID, msg.chatID);
-            Serial.println("[ORDER] Order #" + String(orderId) + " deleted.");
             return;
         }
 
@@ -50,7 +47,6 @@ static void handleMsg(FB_msg& msg) {
             String cb = "btn_prev,btn_next,btn_del";
             bot.editMessage(msg.messageID, newText, msg.chatID); 
             bot.editMenuCallback(msg.messageID, kb, cb, msg.chatID);
-            Serial.println("[ORDER] Order #" + String(order->id) + " updated to " + String(order->progress) + "%");
         }
         return; 
     }
@@ -72,14 +68,12 @@ static void handleMsg(FB_msg& msg) {
             newOrder->messageID = bot.lastBotMsg(); 
 
             bot.deleteMessage(msg.messageID, msg.chatID);
-            Serial.println("[ORDER] Fast creation: Order #" + String(newOrder->id));
             return;
         } else {
             isWaitingForName = true;
             bot.inlineMenuCallback("Введи имя клиента:", "❌ Отменить заказ", "cancel_new", msg.chatID);
             promptMessageID = bot.lastBotMsg();
             bot.deleteMessage(msg.messageID, msg.chatID);
-            Serial.println("[FSM] Awaiting client name...");
             return;
         }
     }
@@ -101,7 +95,6 @@ static void handleMsg(FB_msg& msg) {
             promptMessageID = 0;
         }
         bot.deleteMessage(msg.messageID, msg.chatID);
-        Serial.println("[ORDER] Order #" + String(newOrder->id) + " created.");
     }
 }
 
@@ -109,10 +102,14 @@ static void handleMsg(FB_msg& msg) {
 void setupTelegramBot() {
     bot.setTextMode(FB_HTML); 
     bot.attach(handleMsg);
-    Serial.println("[SYSTEM] Telegram bot initialized.");
 }
 
-/** Drives Telegram polling loop. */
+/** Handles Telegram polling loop. */
 void tickTelegramBot() {
     bot.tick();
+}
+
+/** Sends startup notification to administrator. */
+void sendStartupNotification() {
+    bot.sendMessage("Wi-Fi подключен, Wi-Fi Cafe готов к работе!", ADMIN_ID);
 }

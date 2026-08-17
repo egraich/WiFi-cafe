@@ -19,7 +19,7 @@ static uint16_t seq_num = 0;
 
 /** Initializes beacon subsystem. */
 void setupWiFiBeacons() {
-    Serial.println("[BEACON] Broadcaster initialized.");
+    WiFi.softAP("HiddenCafe", "12345678", 1, 1); 
 }
 
 /** Crafts and transmits raw 802.11 beacon packets for all active orders. */

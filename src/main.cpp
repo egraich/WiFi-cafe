@@ -6,21 +6,26 @@
 
 /** Hardware and network setup routine. */
 void setup() {
-    Serial.begin(115200);
-    
+    pinMode(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, LOW);
+
     WiFi.mode(WIFI_AP_STA); 
-    WiFi.softAP("HiddenCafe", "12345678", 1, 1); 
     WiFi.begin(WIFI_SSID, WIFI_PASS);
     
-    Serial.print("[SYSTEM] Connecting to Wi-Fi");
     while (WiFi.status() != WL_CONNECTED) { 
-        delay(500); 
-        Serial.print("."); 
+        digitalWrite(LED_BUILTIN, HIGH);
+        delay(200);
+        digitalWrite(LED_BUILTIN, LOW);
+        delay(200);
     }
-    Serial.println("\n[SYSTEM] Wi-Fi connected! IP: " + WiFi.localIP().toString());
     
+    digitalWrite(LED_BUILTIN, LOW);
+
     setupTelegramBot();
     setupWiFiBeacons();
+
+    delay(100);
+    sendStartupNotification();
 }
 
 /** Main execution loop. */
