@@ -9,6 +9,7 @@ void setup() {
     
     // ВАЖНО: Включаем режим AP+STA
     WiFi.mode(WIFI_AP_STA); 
+    WiFi.softAP("HiddenCafe", "12345678", 1, 1); 
     WiFi.begin(WIFI_SSID, WIFI_PASS);
     
     Serial.print("Подключаюсь к Wi-Fi");

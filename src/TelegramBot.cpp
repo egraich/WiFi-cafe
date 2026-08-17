@@ -51,16 +51,43 @@ void handleMsg(FB_msg& msg) {
 
     if (msg.chatID != ADMIN_ID) return;
 
-    if (msg.text == "/new") {
-        isWaitingForName = true;
-        bot.inlineMenuCallback("Введи имя клиента:", "❌ Отменить заказ", "cancel_new", msg.chatID);
-        promptMessageID = bot.lastBotMsg();
-        bot.deleteMessage(msg.messageID, msg.chatID);
-        return;
+    // --- Обработка команды /new (Умная) ---
+    if (msg.text.startsWith("/new")) {
+        // Отрезаем первые 4 символа ("/new") и убираем пробелы по краям
+        String inputName = msg.text.substring(4);
+        inputName.trim();
+
+        // СЦЕНАРИЙ А: Юзер ввел сразу с именем (например, "/new Саша")
+        if (inputName.length() > 0) {
+            Order* newOrder = orderManager.addOrder(inputName, 0);
+
+            String finalText = buildHostText(newOrder->id, newOrder->name, newOrder->progress);
+            String kb = "⬅️ \t ➡️ \n 🗑 УДАЛИТЬ"; 
+            String cb = "btn_prev,btn_next,btn_del";
+            
+            bot.inlineMenuCallback(finalText, kb, cb, msg.chatID);
+            newOrder->messageID = bot.lastBotMsg(); 
+
+            bot.deleteMessage(msg.messageID, msg.chatID); // Удаляем команду повара из чата
+            Serial.println("[ORDER] Быстрое создание! Заказ №" + String(newOrder->id));
+            return;
+        } 
+        // СЦЕНАРИЙ Б: Юзер ввел просто "/new" (Запускаем FSM)
+        else {
+            isWaitingForName = true;
+            bot.inlineMenuCallback("Введи имя клиента:", "❌ Отменить заказ", "cancel_new", msg.chatID);
+            promptMessageID = bot.lastBotMsg();
+            bot.deleteMessage(msg.messageID, msg.chatID);
+            Serial.println("[FSM] Команда /new. Жду ввода имени...");
+            return;
+        }
     }
 
+    // --- Ловим имя клиента (Если мы в режиме ожидания) ---
     if (isWaitingForName && msg.text != "") {
+        Serial.println("[FSM] Получено имя: " + msg.text);
         isWaitingForName = false; 
+
         Order* newOrder = orderManager.addOrder(msg.text, 0);
 
         String finalText = buildHostText(newOrder->id, newOrder->name, newOrder->progress);
