@@ -8,7 +8,11 @@ Order* OrderManager::addOrder(String name, int32_t messageID) {
     newOrder.name = name;
     newOrder.progress = 0;
     newOrder.messageID = messageID;
-    for(int i=0; i<6; i++) newOrder.mac[i] = 0;
+    
+    newOrder.mac[0] = 0x02;
+    for(int i = 1; i < 6; i++) {
+        newOrder.mac[i] = random(0, 256);
+    }
 
     orders.push_back(newOrder);
     return &orders.back(); 
