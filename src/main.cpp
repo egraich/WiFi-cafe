@@ -6,99 +6,103 @@
 
 FastBot bot(BOT_TOKEN);
 
-// --- ПЕРЕМЕННЫЕ СОСТОЯНИЯ (FSM) ---
-bool isWaitingForName = false;   // Ждем ли мы сейчас имя от повара?
-int32_t promptMessageID = 0;     // ID сообщения "Введи имя клиента:", чтобы потом его стереть
+bool isWaitingForName = false;
+int32_t promptMessageID = 0;
 
-// Функция-помощник: собирает красивый HTML-текст для сообщения-хоста
-String buildHostText(int id, String name, int progress) {
+// Функция-генератор HTML карточки заказа
+String buildHostText(int id, String name, uint8_t progress) {
     return "Заказ <code>№" + String(id) + "</code>\n" +
            "Имя: <code>" + name + "</code>\n" +
            "Прогресс: <code>" + String(progress) + "%</code>";
 }
 
-// 1. Хэндлер текста
-void handleNewMessage(FB_msg& msg) {
-    if (msg.chatID != ADMIN_ID) return;
+// ЕДИНЫЙ ХЭНДЛЕР ДЛЯ ВСЕГО (Тексты + Коллбэки)
+void handleMsg(FB_msg& msg) {
+    
+    // --- 1. ЛОВИМ НАЖАТИЯ КНОПОК (CALLBACKS) ---
+    if (msg.query) {
+        // Если нажали "Отменить" при вводе имени
+        if (msg.data == "cancel_new") {
+            isWaitingForName = false;
+            bot.deleteMessage(msg.messageID, msg.chatID);
+            return;
+        }
 
-    // Сценарий 1: Пользователь ввел команду /new
+        // Ищем заказ по ID сообщения-хоста
+        Order* order = orderManager.getOrderByMessageID(msg.messageID);
+        if (order == nullptr) return; 
+
+        bool changed = false;
+
+        // Тут мы уже проверяем наши скрытые коллбэки, а не эмодзи кнопок!
+        if (msg.data == "btn_next" && order->progress < 100) {
+            order->progress += 20; 
+            changed = true;
+        } 
+        else if (msg.data == "btn_prev" && order->progress > 0) {
+            order->progress -= 20;
+            changed = true;
+        }
+        else if (msg.data == "btn_del") {
+            orderManager.removeOrder(msg.messageID);
+            bot.deleteMessage(msg.messageID, msg.chatID);
+            Serial.println("Заказ удален!");
+            return;
+        }
+
+        // Если % изменился, обновляем сообщение
+        if (changed) {
+            String newText = buildHostText(order->id, order->name, order->progress);
+            String kb = "⬅️ \t ➡️ \n 🗑 УДАЛИТЬ";
+            String cb = "btn_prev,btn_next,btn_del"; // Скрытые коллбэки
+            
+            // В FastBot, чтобы обновить и текст, и меню с коллбэками, 
+            // мы используем связку из двух команд:
+            bot.editMessage(msg.messageID, newText, msg.chatID); 
+            bot.editMenuCallback(msg.messageID, kb, cb, msg.chatID);
+        }
+        return; // Обязательно выходим, чтобы коллбэк не пошел дальше
+    }
+
+    // --- 2. ЛОВИМ ОБЫЧНЫЕ ТЕКСТЫ ---
+    if (msg.chatID != ADMIN_ID) return; // Защита от левых людей
+
     if (msg.text == "/new") {
         isWaitingForName = true;
-        // Отправляем запрос имени и кнопку отмены
-        int32_t sentID = bot.inlineMenu("Введи имя клиента:", "❌ Отменить заказ", msg.chatID);
-        promptMessageID = sentID; // Запоминаем ID, чтобы снести его позже
-        
-        // Удаляем саму команду /new из чата для чистоты (по желанию)
-        bot.deleteMessage(msg.messageID, msg.chatID); 
+        // Создаем меню с коллбэком cancel_new
+        int32_t sentID = bot.inlineMenuCallback("Введите имя клиента:", "❌ Отменить заказ", "cancel_new", msg.chatID);
+        promptMessageID = sentID;
+        bot.deleteMessage(msg.messageID, msg.chatID); // Удаляем саму команду /new
         return;
     }
 
-    // Сценарий 2: Мы ждали имя, и пользователь написал текст
     if (isWaitingForName && msg.text != "") {
-        isWaitingForName = false; // Сбрасываем флаг
+        isWaitingForName = false; // Выключаем режим ожидания
 
-        // 1. Удаляем сообщение "Введи имя клиента:"
+        // Чистим чат от мусора (убираем "Введи имя" и сообщение повара)
         if (promptMessageID != 0) {
             bot.deleteMessage(promptMessageID, msg.chatID);
+            promptMessageID = 0;
         }
-        // 2. Удаляем сообщение с текстом самого пользователя (оставляем только карточки заказов)
         bot.deleteMessage(msg.messageID, msg.chatID);
 
-        // 3. Отправляем сообщение-хост в ТГ (пока без ID, берем фейковые нули)
+        // Готовим клаву и коллбэки
         String kb = "⬅️ \t ➡️ \n 🗑 УДАЛИТЬ"; 
-        String initialText = buildHostText(0, msg.text, 0); // 0 id - заглушка перед добавлением
+        String cb = "btn_prev,btn_next,btn_del";
         
-        int32_t hostMsgID = bot.inlineMenu(initialText, kb, msg.chatID);
+        // 1. Отправляем "рыбу" сообщения (пока без ID, т.к. заказ еще не создан)
+        String initialText = buildHostText(0, msg.text, 0); 
+        int32_t hostMsgID = bot.inlineMenuCallback(initialText, kb, cb, msg.chatID);
 
-        // 4. Добавляем в оперативную память (OrderManager)
+        // 2. Регаем заказ в оперативке (получаем реальный ID)
         Order* newOrder = orderManager.addOrder(msg.text, hostMsgID);
 
-        // 5. Теперь у нас есть реальный ID (№1, №2). Обновляем текст в ТГ сразу же!
+        // 3. Мгновенно обновляем текст в Телеге (вставляем ID)
         String finalText = buildHostText(newOrder->id, newOrder->name, newOrder->progress);
         bot.editMessage(hostMsgID, finalText, msg.chatID);
-        bot.editMenu(hostMsgID, kb, "", msg.chatID);
+        bot.editMenuCallback(hostMsgID, kb, cb, msg.chatID);
         
-        Serial.println("Создан заказ №" + String(newOrder->id) + " (" + newOrder->name + ")");
-    }
-}
-
-// 2. Хэндлер кнопок
-void handleCallback(FB_msg& msg) {
-    // Если нажали Отмену при создании заказа
-    if (msg.data == "❌ Отменить заказ") {
-        isWaitingForName = false;
-        bot.deleteMessage(msg.messageID, msg.chatID);
-        return;
-    }
-
-    // Если это управление существующим заказом
-    Order* order = orderManager.getOrderByMessageID(msg.messageID);
-    if (order == nullptr) return; // Если заказа нет в памяти, игнорим
-
-    bool changed = false; // Флаг, меняли ли мы процент (чтобы зря не дергать API телеги)
-
-    if (msg.data == "➡️" && order->progress < 100) {
-        order->progress += 20; // Шаг 20%
-        changed = true;
-    } 
-    else if (msg.data == "⬅️" && order->progress > 0) {
-        order->progress -= 20;
-        changed = true;
-    }
-    else if (msg.data == "🗑 УДАЛИТЬ") {
-        // Убиваем из памяти (чтобы перестали лететь Beacon пакеты)
-        orderManager.removeOrder(msg.messageID);
-        // Убиваем сообщение из Телеги
-        bot.deleteMessage(msg.messageID, msg.chatID);
-        Serial.println("Заказ удален!");
-        return;
-    }
-
-    // Если процент изменился, обновляем сообщение в ТГ
-    if (changed) {
-        String newText = buildHostText(order->id, order->name, order->progress);
-        String kb = "⬅️ \t ➡️ \n 🗑 УДАЛИТЬ";
-        bot.editMessage(msg.messageID, newText, kb, msg.chatID);
+        Serial.println("Создан заказ №" + String(newOrder->id) + " | " + newOrder->name);
     }
 }
 
@@ -107,15 +111,13 @@ void setup() {
     
     WiFi.mode(WIFI_STA); 
     WiFi.begin(WIFI_SSID, WIFI_PASS);
-    while (WiFi.status() != WL_CONNECTED) { delay(500); }
+    while (WiFi.status() != WL_CONNECTED) { delay(500); Serial.print("."); }
+    Serial.println("\nWi-Fi OK");
     
-    // Важно! Включаем поддержку HTML тегов <code>, <b> и тд.
-    bot.setTextMode(FB_HTML);
+    bot.setTextMode(FB_HTML); // Врубаем HTML для тегов <code>
+    bot.attach(handleMsg);    // Подключаем наш ЕДИНСТВЕННЫЙ универсальный хэндлер
     
-    bot.attach(handleNewMessage);
-    bot.attachUpdate(handleCallback);
-    
-    Serial.println("Бот готов! Жду /new");
+    Serial.println("Бот готов! Жду команду /new");
 }
 
 void loop() {
