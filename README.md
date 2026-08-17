@@ -2,8 +2,7 @@
 
 An interactive, zero-app queue management system that broadcasts order progress directly to guests' smartphones via dynamic Wi-Fi SSIDs, controlled via a private Telegram bot on an ESP32.
 
-![Wi-Fi Cafe Demo](<img width="358" height="153" alt="image" src="https://github.com/user-attachments/assets/748f7739-d181-4a86-982e-602e737456e3" />
-)
+<img width="358" height="153" alt="image" src="https://github.com/user-attachments/assets/748f7739-d181-4a86-982e-602e737456e3" />
 
 > **[Watch Demo Video](https://youtube.com/)** | **[Live Telegram Bot](https://t.me/WiFi_cafe_bot)**
 
