@@ -79,7 +79,7 @@ The project combines simultaneous client connectivity with raw 802.11 frame inje
                           ▼               │
                   ┌───────────────────────┴───────┐
                   │             ESP32             │
-                  │   Order Database (std::vector)│
+                  │   List of Orders (std::vector)│
                   └───────────────┬───────────────┘
                                   │
                                   │ Raw 802.11 Beacon Frames
