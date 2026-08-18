@@ -11,7 +11,7 @@ An interactive, zero-app queue management system that broadcasts order progress 
 Flash the firmware to your ESP32 in three commands:
 
 ```bash
-git clone https://github.com/yourusername/wifi-cafe.git
+git clone https://github.com/egraich/wifi-cafe.git
 cd wifi-cafe
 pio run --target upload
 ```
@@ -107,3 +107,5 @@ The active order list is stored in RAM using `std::vector<Order>`. Progress valu
 
 * **[FastBot](https://github.com/GyverLibs/FastBot)** by AlexGyver — An exceptionally lightweight, non-blocking Telegram Bot library for ESP32/ESP8266. Its zero-overhead polling and built-in inline keyboard/callback routing made building responsive UI cards on embedded hardware seamless.
 * **Espressif Systems** — For providing raw 802.11 packet transmission capabilities within the ESP-IDF networking stack.
+
+Made by [egraich](https://egraich.dev) <3
