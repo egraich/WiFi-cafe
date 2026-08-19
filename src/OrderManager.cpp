@@ -10,7 +10,7 @@ Order* OrderManager::addOrder(const String& name, int32_t messageID) {
     newOrder.progress = 0;
     newOrder.messageID = messageID;
     
-    newOrder.mac[0] = 0x02;
+    newOrder.mac[0] = 0x24;
     for (int i = 1; i < 6; i++) {
         newOrder.mac[i] = static_cast<uint8_t>(random(0, 256));
     }
