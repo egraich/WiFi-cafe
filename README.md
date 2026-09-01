@@ -21,7 +21,6 @@ Configure your credentials in `src/Config.h`, power the board from a powerbank, 
 ## Features
 
 * **Zero-Install Client Interface:** Guests check their order status directly from their phone's native Wi-Fi settings menu (e.g., `Alex: 40%`) with no apps, logins, or QR code scans.
-* **Seamless In-Place SSID Updates:** Updating progress percentages changes the Wi-Fi string in-place on the smartphone screen without creating clutter or duplicate networks.
 * **Chefs' Telegram Controller:** Manage queue items using interactive inline buttons (`[ ⬅️ ]`, `[ ➡️ ]`, `[ 🗑 DELETE ]`) with automated chat cleanup (FSM).
 * **Fast Order Creation:** Supports instant order injection via `/new <Name>` or guided creation via `/new`.
 * **Fully Portable:** Runs on a single ESP32 powered by an ordinary USB powerbank and tethered to a mobile hotspot.
@@ -96,9 +95,6 @@ The ESP32 operates in `WIFI_AP_STA` mode. It connects as a Station (STA) to the 
 
 ### Raw 802.11 Beacon Injection
 Standard SDKs only support hosting a single SSID. To overcome this, the firmware uses the low-level ESP-IDF `<esp_wifi.h>` API (`esp_wifi_80211_tx`) to craft and broadcast raw 802.11 management beacon frames every 100 ms for each active order. The payload contains dynamically formatted SSID tags (`Name: XX%`), supported rate definitions, and DS parameter sets.
-
-### In-Place Wi-Fi Refreshing (Deterministic MAC Spoofing)
-When access points change their SSID, mobile operating systems (iOS/Android) often cache the old entry alongside the new one, resulting in duplicate networks. To prevent this, each order is assigned a persistent, locally administered MAC address (`0x02` prefix) generated at order creation. Because the BSSID stays constant while the SSID tag payload changes, the client OS updates the existing network entry in-place instead of creating ghost networks.
 
 ### Memory & Execution Budget
 The active order list is stored in RAM using `std::vector<Order>`. Progress values use `uint8_t` (0–100%) to conserve SRAM, and strings are constrained to the standard 32-byte 802.11 SSID length limit with automated suffix byte reservation (`: 100%`).
