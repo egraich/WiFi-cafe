@@ -4,7 +4,7 @@ An interactive, zero-app queue management system that broadcasts order progress 
 
 <img width="358" height="153" alt="image" src="https://github.com/user-attachments/assets/748f7739-d181-4a86-982e-602e737456e3" />
 
->**[Live Telegram Bot](https://t.me/WiFi_cafe_bot)**
+>**[Read Project Story](https://github.com/egraich/WiFi-cafe/blob/main/docs/ProjectStory.md)**
 
 ## Quick Start
 
