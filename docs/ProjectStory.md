@@ -17,4 +17,8 @@ I managed to implement low-level 802.11 frame crafting and manual sequence contr
 I got deep into the 802.11 MAC layer protocol structure and learned how to mix high-level Arduino libraries with native low-level ESP-IDF SDK functions inside PlatformIO to bypass hardware abstraction limitations.
 
 ## What's next for Wi-Fi Cafe
-The next step is implementing active Probe Responses to handle iOS and Android Wi-Fi list aggressive caching and eliminate duplicate network entries, making the UI updates on phones near-instant.
+* **Fixing OS Caching:** Implementing active Probe Responses to handle iOS aggressive Wi-Fi list caching and eliminate duplicate network entries.
+* **Non-Volatile Memory (NVM) Fail-Safe:** Integrating the `Preferences` or `LittleFS` library to save active orders into the ESP32's flash memory. If the power bank accidentally disconnects, all active orders will automatically restore on reboot.
+* **Interactive Captive Portal:** Setting up an offline DNS/HTML captive portal. If a guest clicks on their "Alex: 100%" network out of curiosity, it will open a local web page hosted on the ESP32 saying "Your coffee is ready! Pick it up at Counter #2" with some CSS effects.
+* **Local Web Dashboard (Offline Mode):** For large open-air festivals without cell service where Telegram doesn't work, hosting a local Web Server on the chip. The staff can connect to the hidden network, open `192.168.4.1`, and manage orders via a local web interface.
+* **Migrating to FastBot2:** Upgrading the Telegram library framework to leverage persistent Keep-Alive HTTP connections for near zero-latency button response times.
