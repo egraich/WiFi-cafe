@@ -7,11 +7,22 @@ static FastBot bot(BOT_TOKEN);
 static bool isWaitingForName = false;
 static int32_t promptMessageID = 0;
 
+static constexpr const char* ORDER_KEYBOARD  = "⬅️ \t ➡️ \n 🗑 DELETE";
+static constexpr const char* ORDER_CALLBACKS = "btn_prev,btn_next,btn_del";
+
 /** Builds formatted HTML message card text for a given order. */
 static String buildHostText(int id, const String& name, uint8_t progress) {
-    return "Заказ <code>№" + String(id) + "</code>\n" +
-           "Имя: <code>" + name + "</code>\n" +
-           "Прогресс: <code>" + String(progress) + "%</code>";
+    return "Order <code>#" + String(id) + "</code>\n" +
+           "Name: <code>" + name + "</code>\n" +
+           "Progress: <code>" + String(progress) + "%</code>";
+}
+
+/** Creates order record in memory and dispatches host message to Telegram. */
+static void createOrderCard(const String& name, const String& chatID) {
+    Order* newOrder = orderManager.addOrder(name, 0);
+    String text = buildHostText(newOrder->id, newOrder->name, newOrder->progress);
+    bot.inlineMenuCallback(text, ORDER_KEYBOARD, ORDER_CALLBACKS, chatID);
+    newOrder->messageID = bot.lastBotMsg();
 }
 
 /** Central event dispatcher handling incoming bot messages and callback queries. */
@@ -43,10 +54,8 @@ static void handleMsg(FB_msg& msg) {
 
         if (changed) {
             String newText = buildHostText(order->id, order->name, order->progress);
-            String kb = "⬅️ \t ➡️ \n 🗑 УДАЛИТЬ";
-            String cb = "btn_prev,btn_next,btn_del";
             bot.editMessage(msg.messageID, newText, msg.chatID); 
-            bot.editMenuCallback(msg.messageID, kb, cb, msg.chatID);
+            bot.editMenuCallback(msg.messageID, ORDER_KEYBOARD, ORDER_CALLBACKS, msg.chatID);
         }
         return; 
     }
@@ -58,20 +67,12 @@ static void handleMsg(FB_msg& msg) {
         inputName.trim();
 
         if (inputName.length() > 0) {
-            Order* newOrder = orderManager.addOrder(inputName, 0);
-
-            String finalText = buildHostText(newOrder->id, newOrder->name, newOrder->progress);
-            String kb = "⬅️ \t ➡️ \n 🗑 УДАЛИТЬ"; 
-            String cb = "btn_prev,btn_next,btn_del";
-            
-            bot.inlineMenuCallback(finalText, kb, cb, msg.chatID);
-            newOrder->messageID = bot.lastBotMsg(); 
-
+            createOrderCard(inputName, msg.chatID);
             bot.deleteMessage(msg.messageID, msg.chatID);
             return;
         } else {
             isWaitingForName = true;
-            bot.inlineMenuCallback("Введи имя клиента:", "❌ Отменить заказ", "cancel_new", msg.chatID);
+            bot.inlineMenuCallback("Enter client name:", "❌ Cancel", "cancel_new", msg.chatID);
             promptMessageID = bot.lastBotMsg();
             bot.deleteMessage(msg.messageID, msg.chatID);
             return;
@@ -80,15 +81,7 @@ static void handleMsg(FB_msg& msg) {
 
     if (isWaitingForName && msg.text != "") {
         isWaitingForName = false; 
-
-        Order* newOrder = orderManager.addOrder(msg.text, 0);
-
-        String finalText = buildHostText(newOrder->id, newOrder->name, newOrder->progress);
-        String kb = "⬅️ \t ➡️ \n 🗑 УДАЛИТЬ"; 
-        String cb = "btn_prev,btn_next,btn_del";
-        
-        bot.inlineMenuCallback(finalText, kb, cb, msg.chatID);
-        newOrder->messageID = bot.lastBotMsg(); 
+        createOrderCard(msg.text, msg.chatID);
 
         if (promptMessageID != 0) {
             bot.deleteMessage(promptMessageID, msg.chatID);
@@ -111,5 +104,5 @@ void tickTelegramBot() {
 
 /** Sends startup notification to administrator. */
 void sendStartupNotification() {
-    bot.sendMessage("Wi-Fi подключен, Wi-Fi Cafe готов к работе!", ADMIN_ID);
+    bot.sendMessage("Wi-Fi connected, Wi-Fi Cafe is ready!", ADMIN_ID);
 }
