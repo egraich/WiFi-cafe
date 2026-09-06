@@ -4,7 +4,7 @@ An interactive, zero-app queue management system that broadcasts order progress 
 
 <img width="358" height="153" alt="image" src="https://github.com/user-attachments/assets/748f7739-d181-4a86-982e-602e737456e3" />
 
-**[Watch demo video on YouTube](https://youtu.be/sZdIltr857k)** | [Read Project Story](https://github.com/egraich/WiFi-cafe/blob/main/docs/ProjectStory.md)
+**[Watch demo video on YouTube](https://youtu.be/sZdIltr857k)**
 
 ## Quick Start
 
@@ -103,5 +103,7 @@ The active order list is stored in RAM using `std::vector<Order>`. Progress valu
 
 * **[FastBot](https://github.com/GyverLibs/FastBot)** by AlexGyver — An exceptionally lightweight, non-blocking Telegram Bot library for ESP32/ESP8266. Its zero-overhead polling and built-in inline keyboard/callback routing made building responsive UI cards on embedded hardware seamless.
 * **Espressif Systems** — For providing raw 802.11 packet transmission capabilities within the ESP-IDF networking stack.
+
+[Read Project Story](https://github.com/egraich/WiFi-cafe/blob/main/docs/ProjectStory.md)
 
 Made by [egraich](https://egraich.dev) <3
