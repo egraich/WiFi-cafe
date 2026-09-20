@@ -16,11 +16,7 @@ cd wifi-cafe
 cp config.example.h src/config.h
 ```
 
-Fill in your Wi-Fi and Telegram credentials in `src/config.h`, then flash the board:
-
-```bash
-pio run --target upload
-```
+Fill in your Wi-Fi and Telegram credentials in `src/config.h`, then flash the board as shown in the [guide](https://docs.platformio.org/en/latest/core/quickstart.html#process-project).
 
 Power the ESP32 from any USB source. The onboard status LED will turn off and the bot will send a ready message to Telegram as soon as it establishes an Internet connection.
 
@@ -74,12 +70,7 @@ constexpr uint8_t LED_BUILTIN = 2;
 
 1. Open the project folder in VS Code / PlatformIO.
 2. Connect your ESP32 board via USB.
-3. Build and flash the project:
-
-```bash
-pio run --target upload
-```
-
+3. Build and flash the project following the [guide](https://docs.platformio.org/en/latest/core/quickstart.html#process-project).
 4. Ensure your 2.4 GHz Wi-Fi network is active.
 5. The onboard status LED will blink every 200 ms while negotiating the Wi-Fi connection and shut off once ready.
 
