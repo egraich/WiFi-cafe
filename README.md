@@ -45,12 +45,12 @@ Power the ESP32 from any USB source. The onboard status LED will turn off and th
 * ESP32 Development Board (e.g., ESP32 Dev Module / NodeMCU-32S).
 * Any 2.4 GHz Wi-Fi network with Internet access (home router, cafe Wi-Fi, or smartphone hotspot).
 
-### configuration
+### Configuration
 
 Copy the configuration template `config.example.h` to `src/config.h`:
 
 ```bash
-cp src/config.template.h src/config.h
+cp src/config.example.h src/config.h
 ```
 
 Open `src/config.h` and supply your network and Telegram credentials:
