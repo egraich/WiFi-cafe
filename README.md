@@ -72,7 +72,7 @@ pio run --target upload
 
 The project combines simultaneous client connectivity with raw 802.11 frame injection on a single radio channel.
 
-![System Architecture](architecture.svg)
+![System Architecture](docs/architecture.svg)
 
 ### Dual-Interface Network Operation (AP + STA)
 The ESP32 operates in `WIFI_AP_STA` mode. It connects as a Station (STA) to the mobile hotspot to handle HTTPS long-polling to the Telegram Bot API. Concurrently, a hidden SoftAP interface is initialized to obtain an active transmit handle (`WIFI_IF_AP`) on the exact same radio channel.
