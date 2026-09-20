@@ -25,6 +25,11 @@ Configure your credentials in `src/Config.h`, power the board from a powerbank, 
 * **Fast Order Creation:** Supports instant order injection via `/new <Name>` or guided creation via `/new`.
 * **Fully Portable:** Runs on a single ESP32 powered by an ordinary USB powerbank and tethered to a mobile hotspot.
 
+## OS Compatibility (Important)
+
+* **Android:** Works perfectly. Android uses Passive Scanning, immediately displaying dynamically generated 802.11 Beacon frames in the native Wi-Fi menu.
+* **iOS / Apple Devices:** Currently unsupported. iOS enforces strict Active Scanning. It drops all Wi-Fi networks that do not reply to `Probe Request` packets with a valid `Probe Response`. Since this firmware only performs one-way Beacon frame injection without a full AP state machine, iOS devices will silently ignore the orders.
+
 ## How to Run It Locally
 
 ### Prerequisites
