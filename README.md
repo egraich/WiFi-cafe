@@ -2,6 +2,8 @@
 
 An interactive, zero-app queue management system that broadcasts order progress directly to guests' smartphones via dynamic Wi-Fi SSIDs, controlled via a private Telegram bot on an ESP32.
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22865566.svg)](https://doi.org/10.5281/zenodo.22865566)
+
 <img width="358" height="153" alt="image" src="https://github.com/user-attachments/assets/748f7739-d181-4a86-982e-602e737456e3" />
 
 **[Watch demo video on YouTube](https://youtu.be/sZdIltr857k)**
