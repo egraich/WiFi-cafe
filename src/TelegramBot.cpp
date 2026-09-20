@@ -62,8 +62,6 @@ static void handleMsg(FB_msg& msg) {
         return; 
     }
 
-    if (msg.chatID != ADMIN_ID) return;
-
     if (msg.text.startsWith("/new")) {
         String inputName = msg.text.substring(4);
         inputName.trim();
