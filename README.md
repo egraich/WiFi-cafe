@@ -50,7 +50,7 @@ Power the ESP32 from any USB source. The onboard status LED will turn off and th
 Copy the configuration template `config.example.h` to `src/config.h`:
 
 ```bash
-cp src/config.example.h src/config.h
+cp config.example.h src/config.h
 ```
 
 Open `src/config.h` and supply your network and Telegram credentials:
