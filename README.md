@@ -13,7 +13,7 @@ Flash the firmware to your ESP32 in three steps:
 ```bash
 git clone https://github.com/egraich/wifi-cafe.git
 cd wifi-cafe
-cp src/Config.template.h src/Config.h
+cp Config.example.h src/Config.h
 ```
 
 Fill in your Wi-Fi and Telegram credentials in `src/Config.h`, then flash the board:
@@ -68,6 +68,8 @@ constexpr uint8_t LED_BUILTIN = 2;
 #endif
 ```
 
+> **Note:** `src/Config.h` is ignored by Git (`.gitignore`) to keep your personal credentials safe.
+
 ### Build & Upload
 
 1. Open the project folder in VS Code / PlatformIO.
@@ -83,9 +85,16 @@ pio run --target upload
 
 ## How It Works
 
-The project combines simultaneous client connectivity with raw 802.11 frame injection on a single shared radio channel.
+The system operates across two isolated data paths on a single physical 2.4 GHz radio: an HTTPS control plane for administration and a raw 802.11 broadcast plane for status transmission.
 
-![System Architecture](docs/architecture.svg)
+### System Architecture
+
+![System Architecture Diagram](docs/architecture.svg)
+
+The diagram above illustrates the end-to-end communication flow:
+
+* **Control Path (Telegram → ESP32):** Admin interactions in the Telegram app travel over HTTPS to the Telegram API Server, which routes updates to the ESP32 operating in `STA` mode through an existing Wi-Fi gateway.
+* **Broadcast Path (ESP32 → Guests):** The ESP32's `SoftAP` mode generates raw 802.11 Beacon frames containing updated SSIDs. Android devices passively pick up these frames and display progress in real time, while iOS devices ignore them due to active probe requirements.
 
 ### Dual-Interface Network Operation (AP + STA)
 The ESP32 operates in `WIFI_AP_STA` mode. It connects as a Station (STA) to an existing Wi-Fi network or mobile hotspot to handle HTTPS long-polling to the Telegram Bot API. Concurrently, a hidden SoftAP interface is initialized on the exact same radio channel to obtain an active transmit handle (`WIFI_IF_AP`).
