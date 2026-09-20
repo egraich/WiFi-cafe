@@ -11,6 +11,7 @@ static bool wasConnected = false;
 
 /** Hardware and network setup routine. */
 void setup() {
+    randomSeed(analogRead(0));
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, LOW);
 

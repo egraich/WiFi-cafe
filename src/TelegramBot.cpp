@@ -27,6 +27,8 @@ static void createOrderCard(const String& name, const String& chatID) {
 
 /** Central event dispatcher handling incoming bot messages and callback queries. */
 static void handleMsg(FB_msg& msg) {
+    if (msg.chatID != ADMIN_ID) return;
+    
     if (msg.query) {
         if (msg.data == "cancel_new") {
             isWaitingForName = false;
