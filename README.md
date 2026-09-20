@@ -72,28 +72,7 @@ pio run --target upload
 
 The project combines simultaneous client connectivity with raw 802.11 frame injection on a single radio channel.
 
-```
-                  ┌───────────────────────────────┐
-                  │          Smartphone           │
-                  │   (Hotspot + Telegram App)    │
-                  └───────┬───────────────▲───────┘
-                          │               │
-      Internet Connection │               │ Telegram Bot API
-               (WIFI_STA) │               │ (FastBot)
-                          ▼               │
-                  ┌───────────────────────┴───────┐
-                  │             ESP32             │
-                  │  List of Orders (std::vector) │
-                  └───────────────┬───────────────┘
-                                  │
-                                  │ Raw 802.11 Beacon Frames
-                                  │ (esp_wifi_80211_tx)
-                                  ▼
-                  ┌───────────────────────────────┐
-                  │    Guests' Mobile Devices     │
-                  │  (Wi-Fi List: "Alex: 60%")    │
-                  └───────────────────────────────┘
-```
+![System Architecture](architecture.svg)
 
 ### Dual-Interface Network Operation (AP + STA)
 The ESP32 operates in `WIFI_AP_STA` mode. It connects as a Station (STA) to the mobile hotspot to handle HTTPS long-polling to the Telegram Bot API. Concurrently, a hidden SoftAP interface is initialized to obtain an active transmit handle (`WIFI_IF_AP`) on the exact same radio channel.
