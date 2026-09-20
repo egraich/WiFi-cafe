@@ -72,10 +72,9 @@ void spamBeacons() {
         packet[tail_idx++] = 0x24; packet[tail_idx++] = 0x30; 
         packet[tail_idx++] = 0x48; packet[tail_idx++] = 0x6c; 
 
-        // DS Parameter Set Element ID: 0x03, Length: 0x01, Channel Number
         packet[tail_idx++] = 0x03;
         packet[tail_idx++] = 0x01;
-        packet[tail_idx++] = primaryChan; // Внедряем реальный канал вещания
+        packet[tail_idx++] = primaryChan;
 
         esp_wifi_80211_tx(WIFI_IF_AP, packet, packet_size, false);
         seq_num++;

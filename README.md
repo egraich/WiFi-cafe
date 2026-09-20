@@ -13,10 +13,10 @@ Flash the firmware to your ESP32 in three steps:
 ```bash
 git clone https://github.com/egraich/wifi-cafe.git
 cd wifi-cafe
-cp Config.example.h src/Config.h
+cp config.example.h src/config.h
 ```
 
-Fill in your Wi-Fi and Telegram credentials in `src/Config.h`, then flash the board:
+Fill in your Wi-Fi and Telegram credentials in `src/config.h`, then flash the board:
 
 ```bash
 pio run --target upload
@@ -45,15 +45,15 @@ Power the ESP32 from any USB source. The onboard status LED will turn off and th
 * ESP32 Development Board (e.g., ESP32 Dev Module / NodeMCU-32S).
 * Any 2.4 GHz Wi-Fi network with Internet access (home router, cafe Wi-Fi, or smartphone hotspot).
 
-### Configuration
+### configuration
 
-Copy the configuration template `src/Config.template.h` to `src/Config.h`:
+Copy the configuration template `config.example.h` to `src/config.h`:
 
 ```bash
-cp src/Config.template.h src/Config.h
+cp src/config.template.h src/config.h
 ```
 
-Open `src/Config.h` and supply your network and Telegram credentials:
+Open `src/config.h` and supply your network and Telegram credentials:
 
 ```cpp
 #pragma once
@@ -68,7 +68,7 @@ constexpr uint8_t LED_BUILTIN = 2;
 #endif
 ```
 
-> **Note:** `src/Config.h` is ignored by Git (`.gitignore`) to keep your personal credentials safe.
+> **Note:** `src/config.h` is ignored by Git (`.gitignore`) to keep your personal credentials safe.
 
 ### Build & Upload
 

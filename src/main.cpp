@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <WiFi.h>
-#include "Config.h"
+#include "config.h"
 #include "TelegramBot.h"
 #include "WiFiBeacon.h"
 

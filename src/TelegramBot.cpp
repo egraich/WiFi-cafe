@@ -1,6 +1,6 @@
 #include "TelegramBot.h"
 #include <FastBot.h>
-#include "Config.h"
+#include "config.h"
 #include "OrderManager.h"
 
 static FastBot bot(BOT_TOKEN);
