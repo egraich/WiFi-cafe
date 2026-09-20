@@ -19,7 +19,9 @@ static uint16_t seq_num = 0;
 
 /** Initializes beacon subsystem. */
 void setupWiFiBeacons() {
-    WiFi.softAP("HiddenCafe", "12345678", 1, 1); 
+    uint8_t currentChan = WiFi.channel();
+    if (currentChan == 0) currentChan = 1;
+    WiFi.softAP("HiddenCafe", "12345678", currentChan, 1); 
 }
 
 /** Crafts and transmits raw 802.11 beacon packets for all active orders. */
@@ -70,9 +72,10 @@ void spamBeacons() {
         packet[tail_idx++] = 0x24; packet[tail_idx++] = 0x30; 
         packet[tail_idx++] = 0x48; packet[tail_idx++] = 0x6c; 
 
+        // DS Parameter Set Element ID: 0x03, Length: 0x01, Channel Number
         packet[tail_idx++] = 0x03;
         packet[tail_idx++] = 0x01;
-        packet[tail_idx++] = primaryChan;
+        packet[tail_idx++] = primaryChan; // Внедряем реальный канал вещания
 
         esp_wifi_80211_tx(WIFI_IF_AP, packet, packet_size, false);
         seq_num++;

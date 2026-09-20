@@ -8,22 +8,29 @@ An interactive, zero-app queue management system that broadcasts order progress 
 
 ## Quick Start
 
-Flash the firmware to your ESP32 in three commands:
+Flash the firmware to your ESP32 in three steps:
 
 ```bash
 git clone https://github.com/egraich/wifi-cafe.git
 cd wifi-cafe
+cp src/Config.template.h src/Config.h
+```
+
+Fill in your Wi-Fi and Telegram credentials in `src/Config.h`, then flash the board:
+
+```bash
 pio run --target upload
 ```
 
-Configure your credentials in `src/Config.h`, power the board from a powerbank, and enable your phone's hotspot. The onboard LED will turn off and the bot will send a ready message to Telegram once connected.
+Power the ESP32 from any USB source. The onboard status LED will turn off and the bot will send a ready message to Telegram as soon as it establishes an Internet connection.
 
 ## Features
 
 * **Zero-Install Client Interface:** Guests check their order status directly from their phone's native Wi-Fi settings menu (e.g., `Alex: 40%`) with no apps, logins, or QR code scans.
 * **Chefs' Telegram Controller:** Manage queue items using interactive inline buttons (`[ ⬅️ ]`, `[ ➡️ ]`, `[ 🗑 DELETE ]`) with automated chat cleanup (FSM).
 * **Fast Order Creation:** Supports instant order injection via `/new <Name>` or guided creation via `/new`.
-* **Fully Portable:** Runs on a single ESP32 powered by an ordinary USB powerbank and tethered to a mobile hotspot.
+* **Universal 2.4 GHz Connectivity:** Connects to any standard Wi-Fi network with Internet access — home/cafe routers, dedicated access points, or mobile hotspots.
+* **Fully Portable:** Can be powered by an ordinary USB powerbank for outdoor deployment.
 
 ## OS Compatibility (Important)
 
@@ -36,17 +43,23 @@ Configure your credentials in `src/Config.h`, power the board from a powerbank, 
 
 * VS Code with the [PlatformIO IDE extension](https://platformio.org/).
 * ESP32 Development Board (e.g., ESP32 Dev Module / NodeMCU-32S).
-* Smartphone with Wi-Fi hotspot capability.
+* Any 2.4 GHz Wi-Fi network with Internet access (home router, cafe Wi-Fi, or smartphone hotspot).
 
 ### Configuration
 
-Create `src/Config.h` (or copy from a template) with your network and Telegram credentials:
+Copy the configuration template `src/Config.template.h` to `src/Config.h`:
+
+```bash
+cp src/Config.template.h src/Config.h
+```
+
+Open `src/Config.h` and supply your network and Telegram credentials:
 
 ```cpp
 #pragma once
 
-constexpr const char* WIFI_SSID = "YOUR_HOTSPOT_SSID";
-constexpr const char* WIFI_PASS = "YOUR_HOTSPOT_PASSWORD";
+constexpr const char* WIFI_SSID = "YOUR_WIFI_SSID";
+constexpr const char* WIFI_PASS = "YOUR_WIFI_PASSWORD";
 constexpr const char* BOT_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN";
 constexpr const char* ADMIN_ID  = "YOUR_TELEGRAM_USER_ID";
 
@@ -65,20 +78,20 @@ constexpr uint8_t LED_BUILTIN = 2;
 pio run --target upload
 ```
 
-4. Enable your mobile hotspot using the credentials set in `Config.h`.
-5. The onboard status LED will blink every 400 ms while negotiating the Wi-Fi connection and shut off once ready.
+4. Ensure your 2.4 GHz Wi-Fi network is active.
+5. The onboard status LED will blink every 200 ms while negotiating the Wi-Fi connection and shut off once ready.
 
 ## How It Works
 
-The project combines simultaneous client connectivity with raw 802.11 frame injection on a single radio channel.
+The project combines simultaneous client connectivity with raw 802.11 frame injection on a single shared radio channel.
 
 ![System Architecture](docs/architecture.svg)
 
 ### Dual-Interface Network Operation (AP + STA)
-The ESP32 operates in `WIFI_AP_STA` mode. It connects as a Station (STA) to the mobile hotspot to handle HTTPS long-polling to the Telegram Bot API. Concurrently, a hidden SoftAP interface is initialized to obtain an active transmit handle (`WIFI_IF_AP`) on the exact same radio channel.
+The ESP32 operates in `WIFI_AP_STA` mode. It connects as a Station (STA) to an existing Wi-Fi network or mobile hotspot to handle HTTPS long-polling to the Telegram Bot API. Concurrently, a hidden SoftAP interface is initialized on the exact same radio channel to obtain an active transmit handle (`WIFI_IF_AP`).
 
 ### Raw 802.11 Beacon Injection
-Standard SDKs only support hosting a single SSID. To overcome this, the firmware uses the low-level ESP-IDF `<esp_wifi.h>` API (`esp_wifi_80211_tx`) to craft and broadcast raw 802.11 management beacon frames every 100 ms for each active order. The payload contains dynamically formatted SSID tags (`Name: XX%`), supported rate definitions, and DS parameter sets.
+Standard Wi-Fi SDKs only support hosting a single SSID. To overcome this limitation, the firmware uses the low-level ESP-IDF `<esp_wifi.h>` API (`esp_wifi_80211_tx`) to craft and broadcast raw 802.11 management beacon frames every 100 ms for each active order. The payload contains dynamically formatted SSID tags (`Name: XX%`), supported rate definitions, and dynamic DS parameter sets matching the active channel.
 
 ### Memory & Execution Budget
 The active order list is stored in RAM using `std::vector<Order>`. Progress values use `uint8_t` (0–100%) to conserve SRAM, and strings are constrained to the standard 32-byte 802.11 SSID length limit with automated suffix byte reservation (`: 100%`).
